@@ -1,0 +1,72 @@
+import pygame
+import sys
+
+# Инициализация Pygame
+pygame.init()
+
+# Установка размера окна
+screen = pygame.display.set_mode((800, 600))
+
+# Создание платформы
+platforms = []
+platforms.append(pygame.Rect(0, 500, 200, 50))
+platforms.append(pygame.Rect(200, 400, 100, 50))
+# Создание игрока
+player = pygame.Rect(300, 300, 50, 50)
+gravity = 0.5  # Гравитация
+player_speed = 1
+player_y_momentum = 0  # Импульс в направлении y
+jump_height = 10  # Высота прыжка
+on_ground = False
+
+
+# Главный цикл игры
+while True:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            sys.exit()
+
+    # Обработка ввода с клавиатуры
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_LEFT] :
+        if player.x - player_speed > 0:  # Проверка левой стены
+            player.x -= player_speed
+            pygame.time.wait(1)
+    if keys[pygame.K_RIGHT] :
+        if player.x + player.width + player_speed < 800:  # Проверка правой стены
+            player.x += player_speed
+            pygame.time.wait(1)
+    if keys[pygame.K_UP] and on_ground:  # Проверка верхней стены
+        player_y_momentum = -jump_height
+        pygame.time.wait(2)
+        on_ground = False
+
+    # Применение гравитации
+    player_y_momentum += gravity
+    if player.y + player.height + player_y_momentum < 600:  # Проверка нижней стены
+        player.y += player_y_momentum
+        on_ground = False
+    else:
+        player.y = 600 - player.height
+        player_y_momentum = 0
+        on_ground = True
+
+    # Проверка столкновения с платформой
+    for i in range(len(platforms)):
+        if player.colliderect(platforms[i]):
+            player.y = platforms[i].y - player.height
+            player_y_momentum = 0
+            on_ground = True
+
+
+    # Заполнение экрана черным цветом
+    screen.fill((0, 0, 0))
+
+    # Рисование платформы и игрока
+    pygame.draw.rect(screen, (255, 255, 255), platforms[0])
+    pygame.draw.rect(screen, (255, 255, 255), platforms[1])
+    pygame.draw.rect(screen, (255, 0, 0), player)
+
+    # Обновление дисплея
+    pygame.display.flip()
